@@ -1,0 +1,523 @@
+/* === Базовые стили === */
+QDialog {
+    background-color: #1a1a1a;
+}
+
+QLabel {
+    color: white;
+}
+
+/* === Компоненты карточек === */
+Card {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+Card.base-card {
+    border-radius: 10px;
+    min-height: 100px;
+    max-height: 100px;
+}
+
+/* Заголовки и значения карточек */
+Card QLabel.title {
+    color: #FFB100;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+Card QLabel.value {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+Card QLabel.subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+}
+
+QLabel.status-value-online {
+    color: #2ecc71;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+QLabel.status-value-offline {
+    color: #e74c3c;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.trend-up {
+    color: #2ecc71;
+    font-size: 12px;
+}
+
+/* === Карточки статуса === */
+/* Зеленая карточка */
+.status-card-green {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 rgba(46, 204, 113, 0.2),
+        stop: 1 rgba(0, 0, 0, 0.7)
+    );
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.status-card-green:hover {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 rgba(46, 204, 113, 0.3),
+        stop: 1 rgba(0, 0, 0, 0.8)
+    );
+    border: 1px solid rgba(46, 204, 113, 0.5);
+}
+
+/* Синяя карточка */
+.status-card-blue {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 rgba(52, 152, 219, 0.2),
+        stop: 1 rgba(0, 0, 0, 0.7)
+    );
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.status-card-blue:hover {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 rgba(52, 152, 219, 0.3),
+        stop: 1 rgba(0, 0, 0, 0.8)
+    );
+    border: 1px solid rgba(52, 152, 219, 0.5);
+}
+
+/* Фиолетовая карточка */
+.status-card-purple {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 rgba(155, 89, 182, 0.2),
+        stop: 1 rgba(0, 0, 0, 0.7)
+    );
+    border: 1px solid rgba(155, 89, 182, 0.3);
+}
+
+.status-card-purple:hover {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 rgba(155, 89, 182, 0.3),
+        stop: 1 rgba(0, 0, 0, 0.8)
+    );
+    border: 1px solid rgba(155, 89, 182, 0.5);
+}
+
+/* Красная карточка */
+.status-card-red {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 rgba(231, 76, 60, 0.2),
+        stop: 1 rgba(0, 0, 0, 0.7)
+    );
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.status-card-red:hover {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        stop: 0 rgba(231, 76, 60, 0.3),
+        stop: 1 rgba(0, 0, 0, 0.8)
+    );
+    border: 1px solid rgba(231, 76, 60, 0.5);
+}
+
+/* === Кнопки === */
+/* Навигационные кнопки */
+QPushButton.nav-item {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 14px;
+    padding: 10px;
+    text-align: left;
+}
+
+QPushButton.nav-item:hover {
+    color: #FFB100;
+}
+
+QPushButton.nav-item:hover QIcon {
+    fill: #FFB100;
+}
+
+/* Кнопка настроек */
+QPushButton.icon-button {
+    background: transparent;
+    border: none;
+    padding: 8px;
+}
+
+QPushButton.icon-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+QPushButton.icon-button:pressed {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Кнопка играть */
+QPushButton.play-button {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 rgba(255, 177, 0, 0.8),
+        stop: 1 rgba(255, 177, 0, 0.6)
+    );
+    border: 1px solid rgba(255, 177, 0, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+QPushButton.play-button:hover {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 rgba(255, 177, 0, 0.9),
+        stop: 1 rgba(255, 177, 0, 0.7)
+    );
+    border: 1px solid rgba(255, 177, 0, 0.5);
+}
+
+QPushButton.play-button:pressed {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 rgba(255, 147, 0, 0.8),
+        stop: 1 rgba(255, 147, 0, 0.6)
+    );
+    border: 1px solid rgba(255, 147, 0, 0.5);
+    padding-top: 2px;
+}
+
+/* Кнопка играть (пульсация) */
+QPushButton.play-button-pulse {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 #27ae60,
+        stop: 0.5 #2ecc71,
+        stop: 1 #27ae60
+    );
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 0px 20px;
+}
+
+/* Навигационные кнопки */
+QPushButton.nav-button {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    font-weight: bold;
+}
+
+QPushButton.nav-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+QPushButton.nav-button:pressed {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* === Элементы форм === */
+/* Поля ввода */
+QLineEdit.settings-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: white;
+    padding: 8px;
+}
+
+/* Выпадающие списки */
+QComboBox.settings-combobox {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: white;
+    padding: 8px;
+}
+
+QComboBox.settings-combobox::drop-down {
+    border: none;
+}
+
+QComboBox.settings-combobox::down-arrow {
+    image: url(assets/images/arrow-down.svg);
+    width: 12px;
+    height: 12px;
+}
+
+/* Чекбоксы */
+QCheckBox.settings-checkbox {
+    color: white;
+}
+
+QCheckBox.settings-checkbox::indicator {
+    width: 18px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+QCheckBox.settings-checkbox::indicator:checked {
+    background: #2ecc71;
+}
+
+/* === Прогресс бар === */
+QProgressBar.progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 2px;
+}
+
+QProgressBar.progress-bar::chunk {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 rgba(255, 177, 0, 0.8),
+        stop: 1 rgba(255, 177, 0, 0.6)
+    );
+    border-radius: 2px;
+}
+
+/* === Новости === */
+QFrame.news-card {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+QFrame.news-card:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+QLabel.news-image {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+QLabel.news-tag {
+    background-color: #FFB100;
+    color: black;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    min-width: 80px;
+    max-width: 120px;
+}
+
+QLabel.news-title {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+QLabel.news-title[main="true"] {
+    font-size: 20px;
+}
+
+QLabel.news-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+}
+
+/* === Диалоги === */
+QDialog.settings-dialog {
+    background-color: #1a1a1a;
+}
+
+QLabel.settings-label {
+    color: white;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+QDialog.settings-dialog QTabWidget::pane {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+QDialog.settings-dialog QTabBar::tab {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    padding: 8px 20px;
+    border: none;
+}
+
+QDialog.settings-dialog QTabBar::tab:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+QDialog.settings-dialog QTabBar::tab:selected {
+    background-color: rgba(255, 177, 0, 0.2);
+    border-bottom: 2px solid #FFB100;
+}
+
+/* Форма авторизации */
+QLineEdit.login-input {
+    padding: 10px 12px;
+    min-height: 20px;
+    min-width: 200px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+}
+
+QLineEdit.login-input:focus {
+    border: 1px solid #FFB100;
+    background: rgba(255, 177, 0, 0.1);
+}
+
+QPushButton.login-button {
+    background: #FFB100;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    color: black;
+    font-weight: bold;
+}
+
+QPushButton.login-button:hover {
+    background: #FFC133;
+}
+
+QPushButton.link-button {
+    background: transparent;
+    border: none;
+    color: #FFB100;
+}
+
+QPushButton.link-button:hover {
+    color: #FFC133;
+}
+
+/* Кнопка аккаунта */
+QPushButton.account-button {
+    background: rgba(255, 177, 0, 0.2);
+    border: 1px solid #FFB100;
+    border-radius: 4px;
+    padding: 8px 16px;
+    color: #FFB100;
+    font-weight: bold;
+}
+
+QPushButton.account-button:hover {
+    background: rgba(255, 177, 0, 0.3);
+}
+
+/* Меню аккаунта */
+QMenu.account-menu {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 4px;
+}
+
+QMenu.account-menu::item {
+    padding: 8px 16px;
+    color: white;
+}
+
+QMenu.account-menu::item:selected {
+    background: rgba(255, 177, 0, 0.2);
+}
+
+QMenu.account-menu::separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 4px 0;
+}
+
+/* === Окно авторизации === */
+QDialog#login-dialog {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* Поля ввода в окне авторизации */
+QLineEdit.login-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 10px 12px;
+    min-height: 20px;
+    min-width: 200px;
+    color: white;
+    font-size: 14px;
+}
+
+QLineEdit.login-input:focus {
+    border: 1px solid #FFB100;
+    background: rgba(255, 177, 0, 0.1);
+}
+
+QLineEdit.login-input:hover {
+    border: 1px solid rgba(255, 177, 0, 0.5);
+}
+
+/* Кнопки в окне авторизации */
+QPushButton.link-button {
+    background: transparent;
+    border: none;
+    color: #FFB100;
+    font-size: 12px;
+    text-decoration: underline;
+}
+
+QPushButton.link-button:hover {
+    color: #FFC133;
+}
+
+/* Заголовок окна авторизации */
+QLabel.login-title {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Кнопка входа */
+QPushButton.login-button {
+    background: #FFB100;
+    border: none;
+    border-radius: 4px;
+    color: #1a1a1a;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+QPushButton.login-button:hover {
+    background: #FFC133;
+}
+
+QPushButton.login-button:pressed {
+    background: #E69D00;
+}
+
+QPushButton.login-button:disabled {
+    background: #666666;
+    color: #999999;
+} 

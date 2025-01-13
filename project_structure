@@ -1,0 +1,25 @@
+wow_launcher/
+├── assets/
+│   ├── images/
+│   │   ├── background.jpg
+│   │   ├── wow-logo.png
+│   │   ├── settings.svg
+│   │   ├── news-icon.svg
+│   │   ├── ranking-icon.svg
+│   │   ├── shop-icon.svg
+│   │   ├── arrow-down.svg
+│   │   └── news/
+│   │       ├── main_news.jpg
+│   │       ├── update_news.jpg
+│   │       ├── arena_news.jpg
+│   │       └── items_news.jpg
+│   └── styles/
+│       └── main.qss
+├── config/
+│   └── settings.json
+├── docs/
+│   └── development_stages.txt
+└── src/
+    ├── main.py
+    └── ui/
+        └── main_window.py 

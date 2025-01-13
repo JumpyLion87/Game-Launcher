@@ -1,0 +1,17 @@
+{
+    "game": {
+        "path": "/mnt/Disk_D/wow",
+        "realmlist": "set realmlist logon.server.com",
+        "launch_options": ""
+    },
+    "graphics": {
+        "resolution": "1920x1080",
+        "quality": "\u041d\u0438\u0437\u043a\u043e\u0435",
+        "windowed": false
+    },
+    "auth": {
+        "username": null,
+        "account_id": null,
+        "auto_login": false
+    }
+}

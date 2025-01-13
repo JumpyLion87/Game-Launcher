@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="150" viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Металлический градиент для основного текста -->
+        <linearGradient id="metallic" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#FFD700"/>
+            <stop offset="50%" style="stop-color:#FFA500"/>
+            <stop offset="100%" style="stop-color:#CD7F32"/>
+        </linearGradient>
+        
+        <!-- Градиент для рун -->
+        <linearGradient id="runeGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#00FFFF"/>
+            <stop offset="100%" style="stop-color:#0066FF"/>
+        </linearGradient>
+        
+        <!-- Свечение -->
+        <filter id="glow">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+            <feComposite in="blur" in2="SourceGraphic" operator="over"/>
+        </filter>
+        
+        <!-- Внутреннее свечение для рун -->
+        <filter id="innerGlow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+            <feComposite in="blur" in2="SourceGraphic" operator="in"/>
+            <feMerge>
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- Фоновая руна (стилизованная под щит) -->
+    <path d="M200,10 L300,50 L300,100 L200,140 L100,100 L100,50 Z" 
+          fill="none" 
+          stroke="url(#runeGlow)" 
+          stroke-width="2" 
+          opacity="0.3"
+          filter="url(#glow)"/>
+
+    <!-- Декоративные линии -->
+    <path d="M50,75 L150,75" stroke="url(#metallic)" stroke-width="2" opacity="0.5"/>
+    <path d="M250,75 L350,75" stroke="url(#metallic)" stroke-width="2" opacity="0.5"/>
+
+    <!-- Основной текст -->
+    <g filter="url(#glow)">
+        <!-- Стилизованная буква W -->
+        <path d="M150,40 L170,90 L200,40 L230,90 L250,40" 
+              fill="none" 
+              stroke="url(#metallic)" 
+              stroke-width="8" 
+              stroke-linecap="round"/>
+        
+        <!-- Текст WoW -->
+        <text x="200" y="100" 
+              font-family="Trajan Pro, serif" 
+              font-size="72" 
+              font-weight="bold" 
+              text-anchor="middle" 
+              fill="url(#metallic)" 
+              stroke="#8B4513" 
+              stroke-width="1">
+            WoW
+        </text>
+    </g>
+
+    <!-- Руны по бокам -->
+    <g filter="url(#innerGlow)">
+        <path d="M80,60 L100,40 L120,60 L100,80 Z" 
+              fill="none" 
+              stroke="url(#runeGlow)" 
+              stroke-width="2"/>
+        <path d="M280,60 L300,40 L320,60 L300,80 Z" 
+              fill="none" 
+              stroke="url(#runeGlow)" 
+              stroke-width="2"/>
+    </g>
+
+    <!-- Версия -->
+    <text x="200" y="130" 
+          font-family="Trajan Pro, serif" 
+          font-size="24" 
+          text-anchor="middle" 
+          fill="#CD7F32"
+          filter="url(#glow)">
+        WRATH 3.3.5
+    </text>
+</svg> 
