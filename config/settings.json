@@ -1,8 +1,11 @@
 {
     "game": {
-        "path": "/mnt/Disk_D/wow",
-        "realmlist": "set realmlist logon.server.com",
-        "launch_options": ""
+        "path": "/mnt/Disk_F/Games/World_of_Warcraft",
+        "realmlist": "logon.server.com",
+        "launch_options": "",
+        "runner": "portproton",
+        "wineprefix": "/home/serega/PortProton/prefixes/WOW_LK",
+        "lutris_game_id": ""
     },
     "graphics": {
         "resolution": "1920x1080",

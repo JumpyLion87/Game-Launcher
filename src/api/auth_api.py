@@ -94,6 +94,12 @@ class AuthAPI:
                         gmlevel=0
                     )
                     
+        except ConnectionRefusedError:
+            raise  # Пробрасываем ошибку выше для обработки в диалоге
+        except aiomysql.OperationalError as e:
+            if e.args[0] == 2003:  # Can't connect to MySQL server
+                raise ConnectionRefusedError("Сервер базы данных недоступен")
+            raise
         except Exception as e:
             print(f"Error during login: {e}")
             return AuthResult(

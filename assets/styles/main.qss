@@ -177,7 +177,7 @@ QPushButton.play-button {
     border: 1px solid rgba(255, 177, 0, 0.3);
     border-radius: 8px;
     color: white;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -200,6 +200,11 @@ QPushButton.play-button:pressed {
     );
     border: 1px solid rgba(255, 147, 0, 0.5);
     padding-top: 2px;
+}
+
+QPushButton.play-button:disabled {
+    background: #666666;
+    color: #999999;
 }
 
 /* Кнопка играть (пульсация) */
@@ -520,4 +525,150 @@ QPushButton.login-button:pressed {
 QPushButton.login-button:disabled {
     background: #666666;
     color: #999999;
+}
+
+/* === Окно настроек === */
+QDialog#settings-dialog {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+/* Вкладки */
+QTabWidget::pane {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+QTabBar::tab {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    color: #999;
+    font-size: 14px;
+}
+
+QTabBar::tab:selected {
+    color: #FFB100;
+    border-bottom: 2px solid #FFB100;
+}
+
+QTabBar::tab:hover:!selected {
+    color: #FFC133;
+}
+
+/* Поля ввода в настройках */
+QLineEdit.settings-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 10px 12px;
+    min-height: 20px;
+    color: white;
+    font-size: 14px;
+}
+
+QLineEdit.settings-input:focus {
+    border: 1px solid #FFB100;
+    background: rgba(255, 177, 0, 0.1);
+}
+
+QLineEdit.settings-input:hover {
+    border: 1px solid rgba(255, 177, 0, 0.5);
+}
+
+/* Комбо-боксы в настройках */
+QComboBox.settings-combobox {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 10px 12px;
+    min-height: 20px;
+    color: white;
+    font-size: 14px;
+}
+
+QComboBox.settings-combobox:hover {
+    border: 1px solid rgba(255, 177, 0, 0.5);
+}
+
+QComboBox.settings-combobox:focus {
+    border: 1px solid #FFB100;
+}
+
+QComboBox.settings-combobox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QComboBox.settings-combobox::down-arrow {
+    image: url(assets/images/arrow-down.svg);
+}
+
+/* Чекбоксы в настройках */
+QCheckBox.settings-checkbox {
+    color: white;
+    font-size: 14px;
+    spacing: 8px;
+}
+
+QCheckBox.settings-checkbox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+QCheckBox.settings-checkbox::indicator:checked {
+    background: #FFB100;
+    border-color: #FFB100;
+    image: url(assets/images/checkmark.svg);
+}
+
+QCheckBox.settings-checkbox::indicator:hover {
+    border-color: rgba(255, 177, 0, 0.5);
+}
+
+/* Кнопки в настройках */
+QPushButton.save-button {
+    background: #FFB100;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    color: #1a1a1a;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+QPushButton.save-button:hover {
+    background: #FFC133;
+}
+
+QPushButton.cancel-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 10px 20px;
+    color: white;
+    font-size: 14px;
+}
+
+QPushButton.cancel-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+QPushButton.browse-button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 10px 20px;
+    color: white;
+    font-size: 14px;
+}
+
+QPushButton.browse-button:hover {
+    border-color: #FFB100;
+    color: #FFB100;
 } 

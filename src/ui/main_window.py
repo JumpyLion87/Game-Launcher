@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QProgressBar, QFrame, 
     QGridLayout, QLineEdit, QDialog, QTabWidget,
-    QCheckBox, QFileDialog, QComboBox, QMenu
+    QCheckBox, QFileDialog, QComboBox, QMenu, QMessageBox, QGroupBox
 )
 from PySide6.QtCore import Qt, QSize, QTimer, QPoint
 from PySide6.QtGui import (
@@ -16,6 +16,8 @@ from src.api.auth_api import AuthResult
 import asyncio
 import sys
 from src.ui.login_dialog import LoginDialog
+from src.utils.game_launcher import GameLauncher
+import platform
 
 # Константы
 CARD_SPACING = 15
@@ -124,6 +126,8 @@ class MainWindow(QMainWindow):
                 username=auth_settings["username"]
             )
             self.update_ui_after_login()
+        
+        self.game_launcher = GameLauncher(self.settings)
 
     def create_content(self):
         content = Card("НОВОСТИ")
@@ -414,7 +418,6 @@ class MainWindow(QMainWindow):
     
     def create_footer(self):
         footer = Card()
-        
         layout = QVBoxLayout()
         footer.layout.addLayout(layout)
         
@@ -424,6 +427,7 @@ class MainWindow(QMainWindow):
         self.play_button = QPushButton("ИГРАТЬ")
         self.play_button.setFixedSize(200, 50)
         self.play_button.setProperty("class", "play-button")
+        self.play_button.clicked.connect(self.launch_game)
         
         buttons.addWidget(self.play_button)
         buttons.addStretch()
@@ -502,15 +506,9 @@ class MainWindow(QMainWindow):
         self.save_settings()
     
     def show_settings(self):
-        dialog = SettingsDialog(self)  # Теперь передаем self вместо settings_manager
-        if dialog.exec():  # Если нажата кнопка "Сохранить"
-            # Получаем значения из диалога и сохраняем их
-            self.set_setting("game", "path", dialog.game_path_edit.text())
-            self.set_setting("game", "realmlist", dialog.realm_box.text())
-            self.set_setting("game", "launch_options", dialog.launch_options.text())
-            self.set_setting("graphics", "resolution", dialog.resolution.currentText())
-            self.set_setting("graphics", "quality", dialog.graphics.currentText())
-            self.set_setting("graphics", "windowed", dialog.windowed.isChecked()) 
+        """Показывает окно настроек"""
+        dialog = SettingsDialog(self)
+        dialog.exec()
 
     def create_label(self, text, class_name, additional_props=None):
         """Создает стилизованный QLabel с заданным классом.
@@ -672,18 +670,58 @@ class MainWindow(QMainWindow):
         btn.setProperty("class", "nav-button")
         return btn
 
+    def launch_game(self):
+        """Обработчик нажатия кнопки запуска"""
+        if not self.game_launcher.validate_game_path(self.settings.get('game', {}).get('path', '')):
+            QMessageBox.warning(
+                self,
+                "Ошибка",
+                "Неверный путь к игре. Проверьте настройки."
+            )
+            return
+        
+        # Если пользователь авторизован, добавляем параметры для автологина
+        if self.current_user:
+            self.game_launcher.set_account_info(
+                self.current_user.username,
+                self.current_user.account_id
+            )
+        
+        if self.game_launcher.launch_game():
+            # Сворачиваем лаунчер при запуске игры
+            self.showMinimized()
+        else:
+            QMessageBox.critical(
+                self,
+                "Ошибка",
+                "Не удалось запустить игру. Проверьте настройки и файлы игры."
+            )
+
 class SettingsDialog(QDialog):
     def __init__(self, main_window, parent=None):
         super().__init__(parent)
         self.main_window = main_window
+        self.settings = main_window.settings
         self.setWindowTitle("Настройки")
-        self.setMinimumWidth(600)
-        self.setProperty("class", "settings-dialog")
-        
+        self.setFixedSize(600, 500)
+        self.setObjectName("settings-dialog")
         self.setup_ui()
+    
+    def browse_directory(self, line_edit: QLineEdit, title: str):
+        """Открывает диалог выбора директории"""
+        current_path = line_edit.text()
+        path = QFileDialog.getExistingDirectory(
+            self,
+            title,
+            current_path or str(Path.home())
+        )
+        if path:
+            line_edit.setText(path)
     
     def setup_ui(self):
         layout = QVBoxLayout(self)
+        layout.setSpacing(20)
+        layout.setContentsMargins(30, 30, 30, 30)
         
         # Создаем вкладки
         tabs = QTabWidget()
@@ -696,12 +734,17 @@ class SettingsDialog(QDialog):
         # Кнопки
         buttons = QHBoxLayout()
         buttons.addStretch()
+        buttons.setSpacing(10)
         
         save_btn = QPushButton("Сохранить")
+        save_btn.setObjectName("save_button")
         save_btn.setProperty("class", "save-button")
+        save_btn.setFixedHeight(40)
         
         cancel_btn = QPushButton("Отмена")
+        cancel_btn.setObjectName("cancel_button")
         cancel_btn.setProperty("class", "cancel-button")
+        cancel_btn.setFixedHeight(40)
         
         buttons.addWidget(cancel_btn)
         buttons.addWidget(save_btn)
@@ -709,40 +752,87 @@ class SettingsDialog(QDialog):
         layout.addLayout(buttons)
         
         # Подключаем сигналы
-        save_btn.clicked.connect(self.accept)
+        save_btn.clicked.connect(self.save_settings)
         cancel_btn.clicked.connect(self.reject)
     
     def create_game_tab(self):
         tab = QWidget()
+        tab.setObjectName("game_tab")  # Добавляем id для поиска
         layout = QVBoxLayout(tab)
         
+        # Группа настроек для Linux
+        if platform.system().lower() == 'linux':
+            linux_group = QGroupBox("Настройки для Linux")
+            linux_layout = QVBoxLayout(linux_group)
+            
+            # Выбор эмулятора
+            runner_label = QLabel("Эмулятор:")
+            runner_combo = QComboBox()
+            runner_combo.setObjectName("runner_combo")  # Добавляем id для поиска
+            runner_combo.setProperty("class", "settings-combobox")
+            runner_combo.addItems(["wine", "lutris", "proton", "portproton"])
+            runner_combo.setCurrentText(self.settings.get('game', {}).get('runner', 'wine'))
+            
+            # WINEPREFIX
+            prefix_label = QLabel("WINEPREFIX:")
+            prefix_input = QLineEdit()
+            prefix_input.setObjectName("prefix_input")  # Добавляем id для поиска
+            prefix_input.setProperty("class", "settings-input")
+            prefix_input.setText(self.settings.get('game', {}).get('wineprefix', ''))
+            
+            # Кнопка выбора WINEPREFIX
+            prefix_browse = QPushButton("Обзор")
+            prefix_browse.setProperty("class", "browse-button")
+            prefix_browse.clicked.connect(lambda: self.browse_directory(prefix_input, "Выберите WINEPREFIX"))
+            
+            prefix_layout = QHBoxLayout()
+            prefix_layout.addWidget(prefix_input)
+            prefix_layout.addWidget(prefix_browse)
+            
+            linux_layout.addWidget(runner_label)
+            linux_layout.addWidget(runner_combo)
+            linux_layout.addWidget(prefix_label)
+            linux_layout.addLayout(prefix_layout)
+            
+            layout.addWidget(linux_group)
+        
         # Путь к игре
-        self.game_path_edit = QLineEdit()
-        self.game_path_edit.setText(self.main_window.get_setting("game", "path"))
-        game_path = self.create_path_selector(
-            self.main_window.create_label("Путь к игре:", "settings-label"),
-            "Выбрать папку...",
-            self.game_path_edit
-        )
-        layout.addLayout(game_path)
+        path_label = QLabel("Путь к игре:")
+        path_input = QLineEdit()
+        path_input.setObjectName("game_path")  # Добавляем id для поиска
+        path_input.setProperty("class", "settings-input")
+        path_input.setText(self.settings.get('game', {}).get('path', ''))
+        
+        # Кнопка выбора пути
+        path_browse = QPushButton("Обзор")
+        path_browse.setProperty("class", "browse-button")
+        path_browse.clicked.connect(lambda: self.browse_directory(path_input, "Выберите папку с игрой"))
+        
+        path_layout = QHBoxLayout()
+        path_layout.addWidget(path_input)
+        path_layout.addWidget(path_browse)
         
         # Реалм-лист
-        self.realm_box = QLineEdit()
-        self.realm_box.setText(self.main_window.get_setting("game", "realmlist"))
-        self.realm_box.setPlaceholderText("set realmlist logon.server.com")
-        self.realm_box.setProperty("class", "settings-input")
-        layout.addWidget(self.main_window.create_label("Реалм-лист:", "settings-label"))
-        layout.addWidget(self.realm_box)
+        realmlist_label = QLabel("Реалм-лист:")
+        realmlist_input = QLineEdit()
+        realmlist_input.setObjectName("realmlist_input")  # Добавляем id для поиска
+        realmlist_input.setProperty("class", "settings-input")
+        realmlist_input.setText(self.settings.get('game', {}).get('realmlist', 'logon.server.com'))
         
-        # Дополнительные параметры запуска
-        self.launch_options = QLineEdit()
-        self.launch_options.setText(self.main_window.get_setting("game", "launch_options"))
-        self.launch_options.setPlaceholderText("-console -nosound")
-        self.launch_options.setProperty("class", "settings-input")
-        layout.addWidget(self.main_window.create_label("Параметры запуска:", "settings-label"))
-        layout.addWidget(self.launch_options)
+        # Параметры запуска
+        launch_label = QLabel("Параметры запуска:")
+        launch_input = QLineEdit()
+        launch_input.setObjectName("launch_options")  # Добавляем id для поиска
+        launch_input.setProperty("class", "settings-input")
+        launch_input.setText(self.settings.get('game', {}).get('launch_options', ''))
         
-        layout.addStretch()
+        layout.addWidget(path_label)
+        layout.addLayout(path_layout)
+        layout.addWidget(realmlist_label)
+        layout.addWidget(realmlist_input)
+        layout.addWidget(launch_label)
+        layout.addWidget(launch_input)
+        
         return tab
     
     def create_graphics_tab(self):
@@ -795,3 +885,36 @@ class SettingsDialog(QDialog):
         path = QFileDialog.getExistingDirectory(self, "Выберите папку")
         if path:
             line_edit.setText(path) 
+
+    def save_settings(self):
+        """Сохраняет настройки"""
+        try:
+            # Получаем значения из вкладки Игра
+            game_tab = self.findChild(QWidget, "game_tab")
+            
+            # Путь к игре
+            game_path = game_tab.findChild(QLineEdit, "game_path").text()
+            self.settings['game']['path'] = game_path
+            
+            # Реалм-лист
+            realmlist = game_tab.findChild(QLineEdit, "realmlist_input").text()
+            self.settings['game']['realmlist'] = realmlist
+            
+            # Параметры запуска
+            launch_options = game_tab.findChild(QLineEdit, "launch_options").text()
+            self.settings['game']['launch_options'] = launch_options
+            
+            # Настройки Linux
+            if platform.system().lower() == 'linux':
+                runner = game_tab.findChild(QComboBox, "runner_combo").currentText()
+                wineprefix = game_tab.findChild(QLineEdit, "prefix_input").text()
+                
+                self.settings['game']['runner'] = runner
+                self.settings['game']['wineprefix'] = wineprefix
+            
+            # Сохраняем настройки
+            self.main_window.save_settings()
+            self.accept()
+            
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить настройки: {str(e)}") 

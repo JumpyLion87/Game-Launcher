@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal, QObject
 from src.api.auth_api import AuthAPI, AuthResult
 import asyncio
+from asyncio import TimeoutError
 
 class LoginSignals(QObject):
     success = Signal(AuthResult)
@@ -16,6 +17,7 @@ class LoginDialog(QDialog):
         self.auth_api = AuthAPI()
         self.auth_result = None
         self.signals = LoginSignals()
+        self.login_timeout = 5  # Таймаут в секундах
         self.setObjectName("login-dialog")
         self.setup_ui()
         
@@ -97,13 +99,22 @@ class LoginDialog(QDialog):
     async def try_login(self, username: str, password: str):
         """Асинхронная попытка авторизации"""
         try:
-            result = await self.auth_api.login(username, password)
+            # Добавляем таймаут для операции авторизации
+            result = await asyncio.wait_for(
+                self.auth_api.login(username, password),
+                timeout=self.login_timeout
+            )
             if result.success:
                 self.signals.success.emit(result)
             else:
                 self.signals.error.emit(result.message)
+        except TimeoutError:
+            self.signals.error.emit("Превышено время ожидания. Проверьте подключение к серверу.")
+        except ConnectionRefusedError:
+            self.signals.error.emit("Не удалось подключиться к серверу. Сервер недоступен.")
         except Exception as e:
-            self.signals.error.emit(str(e))
+            self.signals.error.emit("Ошибка подключения к серверу. Проверьте сетевое подключение.")
+            print(f"Login error: {str(e)}")  # Для отладки
         finally:
             # Возвращаем кнопку в исходное состояние
             self.login_button.setEnabled(True)
