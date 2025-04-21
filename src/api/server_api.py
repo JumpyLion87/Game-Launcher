@@ -3,6 +3,7 @@ import aiomysql
 from dataclasses import dataclass
 from typing import Optional, Tuple
 import time
+import aiohttp
 
 @dataclass
 class ServerStatus:
@@ -17,8 +18,8 @@ class ServerAPI:
     def __init__(self):
         """Инициализация API для проверки статуса серверов"""
         # Настройки серверов
-        self.auth_address = ('178.159.92.167', 3724)
-        self.world_address = ('178.159.92.167', 8085)
+        self.auth_address = ('185.175.16.107', 3724)
+        self.world_address = ('185.175.16.107', 8085)
         # Настройки БД (только чтение)
         self.db_config = {
             'host': '192.168.1.42',
@@ -33,7 +34,8 @@ class ServerAPI:
         self._players_cache = None
         self._players_cache_time = None
         self._players_cache_timeout = 30
-
+        self.base_url = "https://api.server.com"  # URL вашего API
+        
     async def get_players_count(self) -> int:
         """Получает количество игроков через БД"""
         try:
@@ -116,3 +118,16 @@ class ServerAPI:
                 world_online=False,
                 players_online=0
             ) 
+
+    async def get_client_info(self) -> dict:
+        """Получает информацию о клиенте с сервера"""
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f"{self.base_url}/client/info") as response:
+                    if response.status == 200:
+                        return await response.json()
+                    else:
+                        raise Exception("Failed to get client info")
+        except Exception as e:
+            self.logger.error(f"Error getting client info: {e}")
+            raise 

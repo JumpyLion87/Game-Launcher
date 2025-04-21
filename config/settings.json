@@ -1,7 +1,7 @@
 {
     "game": {
         "path": "/mnt/Disk_F/Games/World_of_Warcraft",
-        "realmlist": "logon.server.com",
+        "realmlist": "wow.neix.ru",
         "launch_options": "",
         "runner": "portproton",
         "wineprefix": "/home/serega/PortProton/prefixes/WOW_LK",
@@ -13,8 +13,9 @@
         "windowed": false
     },
     "auth": {
-        "username": null,
-        "account_id": null,
-        "auto_login": false
+        "username": "FARKADI",
+        "account_id": 1,
+        "auto_login": false,
+        "saved_password": ""
     }
 }

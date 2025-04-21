@@ -16,6 +16,8 @@ class AuthResult:
 
 class AuthAPI:
     def __init__(self):
+        # Кэшируем подключение
+        self._pool = None
         self.db_config = {
             'host': '192.168.1.42',
             'port': 3306,
@@ -27,6 +29,12 @@ class AuthAPI:
         self.N = 0x894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7
         self.g = 7
         
+    async def get_pool(self):
+        """Получение или создание пула подключений"""
+        if self._pool is None:
+            self._pool = await aiomysql.create_pool(**self.db_config)
+        return self._pool
+
     def _calculate_verifier(self, username: str, password: str, salt: bytes) -> bytes:
         """
         Вычисляет верификатор для SRP6
@@ -50,7 +58,8 @@ class AuthAPI:
 
     async def login(self, username: str, password: str) -> AuthResult:
         try:
-            async with aiomysql.connect(**self.db_config) as conn:
+            pool = await self.get_pool()
+            async with pool.acquire() as conn:
                 async with conn.cursor() as cur:
                     # Получаем данные аккаунта
                     await cur.execute("""

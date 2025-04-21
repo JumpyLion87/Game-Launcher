@@ -18,6 +18,8 @@ class LoginDialog(QDialog):
         self.auth_result = None
         self.signals = LoginSignals()
         self.login_timeout = 5  # Таймаут в секундах
+        # Кэшируем состояние UI
+        self._is_logging_in = False
         self.setObjectName("login-dialog")
         self.setup_ui()
         
@@ -77,6 +79,9 @@ class LoginDialog(QDialog):
         
     def handle_login(self):
         """Обработчик нажатия кнопки входа"""
+        if self._is_logging_in:
+            return
+            
         username = self.username.text().strip()
         password = self.password.text().strip()
         
@@ -88,7 +93,7 @@ class LoginDialog(QDialog):
             )
             return
             
-        # Отключаем кнопку на время авторизации
+        self._is_logging_in = True
         self.login_button.setEnabled(False)
         self.login_button.setText("Вход...")
         

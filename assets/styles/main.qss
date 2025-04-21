@@ -671,4 +671,212 @@ QPushButton.browse-button {
 QPushButton.browse-button:hover {
     border-color: #FFB100;
     color: #FFB100;
+}
+
+/* Стили для диалога загрузки */
+#download-dialog {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+}
+
+#download-dialog QLabel {
+    color: #fff;
+    font-size: 14px;
+}
+
+#download-dialog QProgressBar {
+    border: 1px solid #666;
+    border-radius: 3px;
+    text-align: center;
+    height: 25px;
+    background: #222;
+}
+
+#download-dialog QProgressBar::chunk {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                               stop:0 #4a9eff,
+                               stop:1 #2e5c99);
+}
+
+#download-dialog QPushButton {
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 3px;
+    color: #fff;
+    padding: 5px 15px;
+    min-width: 80px;
+}
+
+#download-dialog QPushButton:hover {
+    background: #333;
+}
+
+#download-dialog QPushButton:pressed {
+    background: #222;
+}
+
+/* Стили прогресса загрузки */
+QProgressBar#download-progress {
+    border: 1px solid rgba(255, 177, 0, 0.3);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    text-align: center;
+    color: white;
+}
+
+QProgressBar#download-progress::chunk {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 rgba(255, 177, 0, 0.8),
+        stop: 1 rgba(255, 177, 0, 0.6)
+    );
+    border-radius: 8px;
+}
+
+QLabel#download-info {
+    color: white;
+    font-size: 14px;
+}
+
+QLabel#download-speed {
+    color: #FFB100;
+    font-size: 14px;
+}
+
+/* Кнопки для скачивания/выбора клиента */
+QPushButton#download-button {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #FFB100,
+        stop:1 #FF8C00
+    );
+    border: none;
+    border-radius: 8px;
+    color: #1a1a1a;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 0 10px;
+}
+
+QPushButton#download-button:hover {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #FFC133,
+        stop:1 #FFA333
+    );
+}
+
+QPushButton#select-folder-button {
+    background: transparent;
+    border: 2px solid #FFB100;
+    border-radius: 8px;
+    color: #FFB100;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 0 10px;
+}
+
+QPushButton#select-folder-button:hover {
+    background: rgba(255, 177, 0, 0.1);
+}
+
+/* Футер */
+QWidget#footer {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 80px;
+    padding: 10px;
+}
+
+/* Стили для основной кнопки */
+QPushButton#game-button {
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 30px;
+    min-width: 200px;
+    min-height: 45px;
+    margin: 0;
+}
+
+/* Состояние "Выбрать папку" */
+QPushButton#game-button[state="select"] {
+    background: transparent;
+    border: 2px solid #FFB100;
+    color: #FFB100;
+    font-size: 14px;
+}
+
+QPushButton#game-button[state="select"]:hover {
+    background: rgba(255, 177, 0, 0.1);
+}
+
+/* Состояние "Скачать клиент" */
+QPushButton#game-button[state="download"] {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #FFB100,
+        stop:1 #FF8C00
+    );
+    border: none;
+    color: #1a1a1a;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+QPushButton#game-button[state="download"]:hover {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #FFC133,
+        stop:1 #FFA333
+    );
+}
+
+/* Состояние "Загрузка" */
+QPushButton#game-button[state="downloading"] {
+    background: #666;
+    border: none;
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Состояние "Играть" */
+QPushButton#game-button[state="play"] {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #4CAF50,
+        stop:1 #45A049
+    );
+    border: none;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+QPushButton#game-button[state="play"]:hover {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 #5CBF60,
+        stop:1 #55B059
+    );
+}
+
+/* Прогресс-бар загрузки */
+QProgressBar#download-progress {
+    border: 1px solid rgba(255, 177, 0, 0.3);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    text-align: center;
+    color: white;
+}
+
+QProgressBar#download-progress::chunk {
+    background: qlineargradient(
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 rgba(255, 177, 0, 0.8),
+        stop: 1 rgba(255, 177, 0, 0.6)
+    );
+    border-radius: 8px;
 } 

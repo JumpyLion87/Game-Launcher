@@ -4,7 +4,8 @@ from PySide6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QProgressBar, QFrame, 
     QGridLayout, QLineEdit, QDialog, QTabWidget,
-    QCheckBox, QFileDialog, QComboBox, QMenu, QMessageBox, QGroupBox
+    QCheckBox, QFileDialog, QComboBox, QMenu, QMessageBox, QGroupBox,
+    QSystemTrayIcon
 )
 from PySide6.QtCore import Qt, QSize, QTimer, QPoint
 from PySide6.QtGui import (
@@ -18,6 +19,7 @@ import sys
 from src.ui.login_dialog import LoginDialog
 from src.utils.game_launcher import GameLauncher
 import platform
+import humanize
 
 # Константы
 CARD_SPACING = 15
@@ -51,9 +53,11 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         
+        # Кэшируем часто используемые виджеты
+        self._cached_widgets = {}
+        
         # Загружаем стили
-        with open("assets/styles/main.qss", "r") as f:
-            self.setStyleSheet(f.read())
+        self._load_styles()
         
         # Создаем event loop для асинхронных операций
         self.loop = asyncio.new_event_loop()
@@ -88,7 +92,30 @@ class MainWindow(QMainWindow):
         }
         
         self.settings = self.load_settings()
+        self.game_launcher = GameLauncher(self.settings, self)
+        self.current_user = None
         
+        # Подключаем сигналы GameLauncher
+        self.game_launcher.signals.client_missing.connect(self.show_download_buttons)
+        self.game_launcher.signals.download_progress.connect(self.update_download_progress)
+        self.game_launcher.signals.download_error.connect(self.on_download_error)
+        
+        # Проверяем сохраненные данные авторизации
+        auth = self.settings.get('auth', {})
+        if auth.get('username') and auth.get('account_id'):
+            self.current_user = AuthResult(
+                success=True,
+                message="Сессия восстановлена",
+                username=auth['username'],
+                account_id=auth['account_id']
+            )
+            # Обновляем данные в GameLauncher
+            self.game_launcher.set_account_info(
+                auth['username'],
+                auth['account_id']
+            )
+
+        # Создаем UI
         self.setWindowTitle("WoW 3.3.5 Launcher")
         self.setMinimumSize(1200, 800)
         
@@ -109,25 +136,68 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.create_header())
         main_layout.addWidget(self.create_status_cards())
         main_layout.addWidget(self.create_content())
-        main_layout.addWidget(self.create_footer())
+        
+        # Создаем футер
+        footer = QWidget()
+        footer.setObjectName("footer")
+        self.footer_layout = QHBoxLayout(footer)
+        self.footer_layout.setContentsMargins(20, 10, 20, 10)
+        self.footer_layout.setSpacing(10)
+        self.footer_layout.setAlignment(Qt.AlignLeft)  # Выравнивание влево
+        
+        # Настраиваем кнопку игры
+        self.setup_game_button()
+        
+        # Добавляем растягивающийся спейсер после кнопки
+        self.footer_layout.addStretch()
+        
+        main_layout.addWidget(footer)
         
         # Первоначальное получение статуса
         self.update_server_status()
         
-        self.current_user = None  # Текущий пользователь
-        
-        # Проверяем сохраненную авторизацию
-        auth_settings = self.settings.get("auth", {})
-        if auth_settings.get("auto_login"):
-            self.current_user = AuthResult(
-                success=True,
-                message="Успешная авторизация",
-                account_id=auth_settings["account_id"],
-                username=auth_settings["username"]
-            )
+        # Обновляем UI если есть сохраненная сессия
+        if self.current_user:
             self.update_ui_after_login()
+
+        # Инициализация трей-иконки
+        self.tray_icon = QSystemTrayIcon(self)
+        self.tray_icon.setIcon(QIcon("assets/images/wow-logo.png"))
+        self.tray_icon.setToolTip("WoW 3.3.5 Launcher")  # Подсказка при наведении
         
-        self.game_launcher = GameLauncher(self.settings)
+        # Создаем меню для трей-иконки
+        self.tray_menu = QMenu()
+        
+        # Добавляем пункты меню
+        play_action = QAction("Играть", self)
+        play_action.triggered.connect(self.launch_game_from_tray)
+        self.tray_menu.addAction(play_action)
+        
+        restore_action = QAction("Восстановить", self)
+        restore_action.triggered.connect(self.show_normal)
+        self.tray_menu.addAction(restore_action)
+        
+        exit_action = QAction("Выйти", self)
+        exit_action.triggered.connect(self.close)
+        self.tray_menu.addAction(exit_action)
+        
+        self.tray_icon.setContextMenu(self.tray_menu)
+        self.tray_icon.activated.connect(self.on_tray_icon_activated)
+        self.tray_icon.show()  # Показываем иконку сразу
+
+    def _load_styles(self):
+        """Загрузка стилей"""
+        try:
+            with open("assets/styles/main.qss", "r") as f:
+                self.setStyleSheet(f.read())
+        except Exception as e:
+            self.logger.error(f"Error loading styles: {e}")
+
+    def _get_widget(self, name: str):
+        """Получение кэшированного виджета"""
+        if name not in self._cached_widgets:
+            self._cached_widgets[name] = self.findChild(QWidget, name)
+        return self._cached_widgets[name]
 
     def create_content(self):
         content = Card("НОВОСТИ")
@@ -417,32 +487,8 @@ class MainWindow(QMainWindow):
         return card
     
     def create_footer(self):
-        footer = Card()
-        layout = QVBoxLayout()
-        footer.layout.addLayout(layout)
-        
-        # Кнопки
-        buttons = QHBoxLayout()
-        
-        self.play_button = QPushButton("ИГРАТЬ")
-        self.play_button.setFixedSize(200, 50)
-        self.play_button.setProperty("class", "play-button")
-        self.play_button.clicked.connect(self.launch_game)
-        
-        buttons.addWidget(self.play_button)
-        buttons.addStretch()
-        
-        # Прогресс
-        self.progress = QProgressBar()
-        self.progress.setFixedHeight(4)
-        self.progress.setTextVisible(False)
-        self.progress.setProperty("class", "progress-bar")
-        self.progress.setValue(100)
-        
-        layout.addLayout(buttons)
-        layout.addWidget(self.progress)
-        
-        return footer
+        # Этот метод больше не нужен, так как футер создается в __init__
+        pass
     
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -604,19 +650,67 @@ class MainWindow(QMainWindow):
     
     def update_ui_after_login(self):
         """Обновляет UI после успешной авторизации"""
+        self.game_button.setEnabled(True)
+        self.update_account_info()
+        
+    def update_account_info(self):
+        """Обновляет информацию об аккаунте в UI"""
         if self.current_user:
-            # Сохраняем данные авторизации
-            self.settings["auth"] = {
-                "username": self.current_user.username,
-                "account_id": self.current_user.account_id,
-                "auto_login": True
-            }
-            self.save_settings()  # Теперь этот вызов должен работать
-            # Обновляем кнопку
+            # Обновляем кнопку аккаунта
             self.account_btn.setText(self.current_user.username)
             self.account_btn.setProperty("class", "account-button")
+            
+            # Обновляем стили
             self.account_btn.style().unpolish(self.account_btn)
             self.account_btn.style().polish(self.account_btn)
+            
+            # Обновляем меню аккаунта
+            self.create_account_menu()
+    
+    def create_account_menu(self):
+        """Создает меню аккаунта"""
+        menu = QMenu(self)
+        menu.setProperty("class", "account-menu")
+        
+        if self.current_user:
+            # Добавляем информацию об аккаунте
+            account_info = QAction(f"Аккаунт: {self.current_user.username}", self)
+            account_info.setEnabled(False)
+            menu.addAction(account_info)
+            
+            menu.addSeparator()
+            
+            # Кнопка выхода
+            logout = QAction("Выйти", self)
+            logout.triggered.connect(self.logout)
+            menu.addAction(logout)
+        else:
+            # Кнопка входа
+            login = QAction("Войти", self)
+            login.triggered.connect(self.show_login)
+            menu.addAction(login)
+        
+        return menu
+
+    def logout(self):
+        """Выход из аккаунта"""
+        # Очищаем данные авторизации
+        self.settings['auth']['username'] = None
+        self.settings['auth']['account_id'] = None
+        self.settings['auth']['auto_login'] = False
+        self.settings['auth']['saved_password'] = ""
+        
+        # Сохраняем настройки
+        self.save_settings()
+        
+        # Обновляем UI
+        self.account_btn.setText("Войти")
+        self.account_btn.setMenu(None)
+        self.play_button.setEnabled(False)
+        self.current_user = None
+        
+        # Очищаем данные в GameLauncher
+        self.game_launcher.set_account_info(None, None)
 
     def show_login_dialog(self):
         """Показывает диалог авторизации"""
@@ -650,17 +744,6 @@ class MainWindow(QMainWindow):
         menu.exec_(self.account_btn.mapToGlobal(
             QPoint(0, self.account_btn.height())
         ))
-
-    def logout(self):
-        """Выход из аккаунта"""
-        self.current_user = None
-        # Очищаем данные авторизации
-        self.settings["auth"] = self.default_settings["auth"]
-        self.save_settings()
-        self.account_btn.setText("Войти")
-        self.account_btn.setProperty("class", "login-button")
-        self.account_btn.style().unpolish(self.account_btn)
-        self.account_btn.style().polish(self.account_btn)
 
     def create_nav_button(self, text: str, icon_path: str) -> QPushButton:
         """Создает навигационную кнопку"""
@@ -697,26 +780,195 @@ class MainWindow(QMainWindow):
                 "Не удалось запустить игру. Проверьте настройки и файлы игры."
             )
 
+    def show_download_buttons(self):
+        """Показывает кнопки для скачивания клиента"""
+        self.play_button.hide()
+        
+        # Создаем кнопки в футере
+        self.download_button = QPushButton("Скачать клиент")
+        self.download_button.setObjectName("download-button")
+        self.download_button.clicked.connect(self.start_download)
+        
+        self.select_folder_button = QPushButton("Выбрать папку")
+        self.select_folder_button.setObjectName("select-folder-button")
+        self.select_folder_button.clicked.connect(self.select_game_folder)
+        
+        # Добавляем в футер
+        self.footer_layout.insertWidget(1, self.download_button)
+        self.footer_layout.insertWidget(2, self.select_folder_button)
+        
+    def show_download_progress(self):
+        """Показывает прогресс загрузки"""
+        self.game_button.setEnabled(False)
+        self.game_button.setText("Загрузка...")
+        self.game_button.setProperty("state", "downloading")
+        
+        # Создаем и добавляем прогресс-бар
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setObjectName("download-progress")
+        self.progress_bar.setFixedHeight(40)
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.footer_layout.insertWidget(1, self.progress_bar)
+        
+        # Обновляем стили
+        self.game_button.style().unpolish(self.game_button)
+        self.game_button.style().polish(self.game_button)
+
+    def update_download_progress(self, progress: float, status: str, speed: float):
+        """Обновляет прогресс загрузки"""
+        if hasattr(self, 'progress_bar'):
+            self.progress_bar.setValue(int(progress))
+            speed_str = humanize.naturalsize(speed, binary=True) + "/s"
+            self.progress_bar.setFormat(f"{status} - {speed_str}")
+
+    def on_download_error(self, error_msg: str):
+        """Обработчик ошибки загрузки"""
+        self.hide_download_progress()
+        QMessageBox.critical(self, "Ошибка загрузки", error_msg)
+
+    def setup_game_button(self):
+        """Настройка основной кнопки игры/загрузки"""
+        self.game_button = QPushButton()
+        self.game_button.setObjectName("game-button")
+        
+        # Обновляем состояние кнопки
+        self.update_game_button_state()
+        
+        # Добавляем в футер
+        self.footer_layout.addWidget(self.game_button)
+
+    def on_tray_icon_activated(self, reason):
+        """Обработчик кликов по трей-иконке"""
+        if reason == QSystemTrayIcon.Trigger:  # Обычный клик
+            self.show_normal()
+
+    def launch_game_from_tray(self):
+        """Запускает игру из трея"""
+        if not self.game_launcher.validate_game_path(self.settings.get('game', {}).get('path', '')):
+            self.show_normal()
+            QMessageBox.warning(
+                self,
+                "Ошибка", 
+                "Неверный путь к игре. Проверьте настройки."
+            )
+            return
+            
+        if self.current_user:
+            self.game_launcher.set_account_info(
+                self.current_user.username,
+                self.current_user.account_id
+            )
+            
+        if self.game_launcher.launch_game():
+            self.hide()
+            self.tray_icon.show()
+
+    def update_game_button_state(self):
+        """Обновляет состояние кнопки в зависимости от наличия клиента"""
+        # Безопасно отключаем старые подключения
+        try:
+            if self.game_button.receivers(self.game_button.clicked) > 0:
+                self.game_button.clicked.disconnect()
+        except (TypeError, RuntimeError):
+            pass  # Игнорируем ошибки отключения
+            
+        if not self.settings['game']['path']:
+            # Нет выбранной папки
+            self.game_button.setText("Выбрать папку")
+            self.game_button.setProperty("state", "select")
+            self.game_button.clicked.connect(self.select_game_folder)
+            
+        elif not self.game_launcher.validate_game_path(self.settings['game']['path']):
+            # Папка выбрана, но клиент не найден
+            self.game_button.setText("Скачать клиент")
+            self.game_button.setProperty("state", "download")
+            self.game_button.clicked.connect(self.start_download)
+            
+        else:
+            # Клиент найден
+            self.game_button.setText("Играть")
+            self.game_button.setProperty("state", "play")
+            self.game_button.clicked.connect(self.launch_game)
+
+        # Обновляем стили
+        self.game_button.style().unpolish(self.game_button)
+        self.game_button.style().polish(self.game_button)
+
+    def start_download(self):
+        """Запускает загрузку клиента"""
+        try:
+            self.game_launcher._download_client()
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", str(e))
+            
+    def select_game_folder(self):
+        """Открывает диалог выбора папки с игрой"""
+        path = QFileDialog.getExistingDirectory(
+            self,
+            "Выберите папку с игрой"
+        )
+        if path:
+            self.settings['game']['path'] = path
+            self.save_settings()
+            # Проверяем новый путь и обновляем состояние кнопки
+            self.game_launcher.validate_game_path(path)
+            self.update_game_button_state()
+            
+    def launch_game(self):
+        """Запускает игру"""
+        if self.game_launcher.launch_game():
+            self.hide()  # Скрываем окно
+            self.tray_icon.show()  # Показываем иконку в трее
+
+    def on_login_success(self, result: AuthResult):
+        """Обработчик успешной авторизации"""
+        self.current_user = result
+        self.settings['auth']['username'] = result.username
+        self.settings['auth']['account_id'] = result.account_id
+        self.save_settings()
+
+    def start_game_monitoring(self):
+        """Запускает мониторинг процесса игры"""
+        self.game_monitor_timer = QTimer()
+        self.game_monitor_timer.timeout.connect(self.check_game_running)
+        self.game_monitor_timer.start(5000)  # Проверяем каждые 5 секунд
+
+    def check_game_running(self):
+        """Проверяет, запущена ли игра"""
+        if not self.game_launcher.is_game_running():
+            self.game_monitor_timer.stop()
+            self.tray_icon.hide()  # Скрываем иконку
+            self.showNormal()  # Восстанавливаем окно
+
+    def show_normal(self):
+        """Восстанавливает окно из трея"""
+        self.showNormal()
+        self.activateWindow()
+
 class SettingsDialog(QDialog):
     def __init__(self, main_window, parent=None):
         super().__init__(parent)
         self.main_window = main_window
-        self.settings = main_window.settings
-        self.setWindowTitle("Настройки")
-        self.setFixedSize(600, 500)
-        self.setObjectName("settings-dialog")
+        self.settings = main_window.settings.copy()
+        self.game_launcher = main_window.game_launcher
         self.setup_ui()
     
-    def browse_directory(self, line_edit: QLineEdit, title: str):
-        """Открывает диалог выбора директории"""
-        current_path = line_edit.text()
-        path = QFileDialog.getExistingDirectory(
-            self,
-            title,
-            current_path or str(Path.home())
-        )
+    def browse_directory(self, line_edit, title):
+        """Открывает диалог выбора папки"""
+        path = QFileDialog.getExistingDirectory(self, title)
         if path:
             line_edit.setText(path)
+            # Проверяем наличие клиента если это путь к игре
+            if line_edit.objectName() == "game_path":
+                if not self.game_launcher.validate_game_path(path):
+                    QMessageBox.warning(
+                        self,
+                        "Клиент не найден",
+                        "В указанной папке не найден клиент WoW. "
+                        "После сохранения настроек вам будет предложено скачать его."
+                    )
     
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -894,11 +1146,31 @@ class SettingsDialog(QDialog):
             
             # Путь к игре
             game_path = game_tab.findChild(QLineEdit, "game_path").text()
+            old_path = self.settings['game'].get('path', '')
             self.settings['game']['path'] = game_path
+            
+            # Если путь изменился, проверяем наличие клиента
+            if game_path != old_path:
+                if not self.game_launcher.validate_game_path(game_path):
+                    if QMessageBox.question(
+                        self,
+                        "Клиент не найден",
+                        "В указанной папке не найден клиент WoW. Хотите скачать его?",
+                        QMessageBox.Yes | QMessageBox.No
+                    ) == QMessageBox.Yes:
+                        self.accept()  # Закрываем настройки
+                        self.main_window.show_download_buttons()
+                        return
             
             # Реалм-лист
             realmlist = game_tab.findChild(QLineEdit, "realmlist_input").text()
+            old_realmlist = self.settings['game'].get('realmlist', '')
             self.settings['game']['realmlist'] = realmlist
+            
+            # Если изменился реалм-лист или путь к игре, обновляем файл
+            if (realmlist != old_realmlist or game_path != old_path) and game_path:
+                if not self.game_launcher.update_realmlist(game_path, realmlist):
+                    raise Exception("Не удалось обновить realmlist.wtf")
             
             # Параметры запуска
             launch_options = game_tab.findChild(QLineEdit, "launch_options").text()
@@ -913,8 +1185,9 @@ class SettingsDialog(QDialog):
                 self.settings['game']['wineprefix'] = wineprefix
             
             # Сохраняем настройки
+            self.main_window.settings = self.settings
             self.main_window.save_settings()
             self.accept()
             
         except Exception as e:
-            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить настройки: {str(e)}") 
+            QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить настройки: {str(e)}")
