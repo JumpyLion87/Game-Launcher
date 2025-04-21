@@ -19,10 +19,10 @@ class AuthAPI:
         # Кэшируем подключение
         self._pool = None
         self.db_config = {
-            'host': '192.168.1.42',
+            'host': '0.0.0.0',
             'port': 3306,
             'user': 'launcher_ro',
-            'password': 'rPIisIhn46',
+            'password': '',
             'db': 'acore_auth'
         }
         # Константы для SRP6
