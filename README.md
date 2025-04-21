@@ -1,3 +1,5 @@
+![Screenshot](images/screenshot.png)
+
 # WoW 3.3.5 Launcher
 
 Современный лаунчер для World of Warcraft 3.3.5a с поддержкой AzerothCore.
