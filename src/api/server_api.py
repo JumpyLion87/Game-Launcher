@@ -18,14 +18,14 @@ class ServerAPI:
     def __init__(self):
         """Инициализация API для проверки статуса серверов"""
         # Настройки серверов
-        self.auth_address = ('185.175.16.107', 3724)
-        self.world_address = ('185.175.16.107', 8085)
+        self.auth_address = ('0.0.0.0', 3724)
+        self.world_address = ('0.0.0.0', 8085)
         # Настройки БД (только чтение)
         self.db_config = {
-            'host': '192.168.1.42',
+            'host': '0.0.0.0',
             'port': 3306,
             'user': 'launcher_ro',     # Пользователь для чтения
-            'password': 'rPIisIhn46',
+            'password': '',
             'db': 'acore_characters'
         }
         # Кэш
