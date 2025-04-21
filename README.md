@@ -23,8 +23,8 @@
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/yourusername/wow-3.3.5-launcher.git
-cd wow-3.3.5-launcher
+git clone https://github.com/JumpyLion87/Game-Launcher.git
+cd Game-Launcher
 ```
 
 2. Установите зависимости:
