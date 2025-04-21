@@ -1,7 +1,7 @@
 {
     "game": {
         "path": "/mnt/Disk_F/Games/World_of_Warcraft",
-        "realmlist": "wow.neix.ru",
+        "realmlist": "wow.test.loc",
         "launch_options": "",
         "runner": "portproton",
         "wineprefix": "/home/serega/PortProton/prefixes/WOW_LK",
